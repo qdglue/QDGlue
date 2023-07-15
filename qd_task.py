@@ -27,6 +27,10 @@ class QDTask(ABC):
         # TODO(btjanaka): How should we handle extra data in the returns here?
         # There's often a lot more info that we can return from evaluate().
         # Perhaps we can do something like `info` as is done in OpenAI Gym.
+        #
+        # TODO(btjanaka): We should incorporate DQD domains here -- for example,
+        # what argument should we pass in if we want to compute gradients in
+        # this function? What should we return if we are computing gradients?
 
     @property
     @abstractmethod
@@ -45,9 +49,15 @@ class QDTask(ABC):
 
     @property
     @abstractmethod
+    def descriptor_space_bounds(self):
+        """Bounds of the descriptor space."""
+
+    @property
+    @abstractmethod
     def parameter_type(self):
         """Binary or continuous"""
         # TODO(btjanaka): We should be more robust to different types of
         # solutions in the future; more to discuss here.
         #
-        # TODO(btjanaka): Define the return type here.
+        # TODO(btjanaka): Define the return type here - string, enum, int? I
+        # would probably go with an Enum since we have a limited set of choices.
