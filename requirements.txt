@@ -1,4 +1,4 @@
 numpy
-ribs==0.5.1
+ribs==0.5.2
 fire
 tqdm
