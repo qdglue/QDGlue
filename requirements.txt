@@ -1,2 +1,4 @@
 numpy
 ribs==0.5.1
+fire
+tqdm
