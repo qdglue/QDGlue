@@ -2,36 +2,16 @@
 # N dimension of parameter space
 # D dimension of descriptor space
 # F dimension of fitness objective space
-# 
+#
 # given a vector with N items, I will return vectors with D and F items
 
-import numpy as np 
+import numpy as np
 
-class QDTask():
-    def __init__(self):
-       pass
+from qd_task import QDTask
 
-    def evaluate(self,parameters):
-        pass
 
-    def get_parameter_space_dims(self):
-        pass
-
-    def get_objective_space_dims(self):
-        pass
-
-    def get_parameter_type(self):
-        '''
-        binary of continuous
-        '''
-        pass
-
-    
-
-        
-
-class QDRNG():
-    # our expectation 
+class QDRNG:
+    # our expectation
     # evaLFn is a class that contains
     '''
     N 
@@ -40,11 +20,12 @@ class QDRNG():
     evalFn
     Binary?
     Archive is in EvalInstance
-    ''' 
-    def __init__(self,evalInstance):
+    '''
+
+    def __init__(self, evalInstance):
         self.evalInstance = evalInstance
         return
-    
+
     def emit(self):
         parameterSpaceDim = self.evalInstance.N
         #descriptorSpaceDim =  self.evalInstance.D
@@ -59,7 +40,7 @@ class QDRNG():
 
         return parameters
 
-    def add(self,parameters,measures,fitness):
+    def add(self, parameters, measures, fitness):
         '''
         parameters is the parameters we just evaluted
         measures is the objective mesures
@@ -71,7 +52,7 @@ class QDRNG():
 def main():
     print("hello")
 
+
 if __name__ == "__main__":
 
     main()
-
