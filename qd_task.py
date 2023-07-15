@@ -36,6 +36,8 @@ class QDTask(ABC):
     @abstractmethod
     def parameter_space_dims(self):
         """Dimensions of the parameter space."""
+        # TODO(btjanaka): What return values are we expecting here? E.g. Do we
+        # want 1D solutions only here, in which case this is just an int?
 
     @property
     @abstractmethod
