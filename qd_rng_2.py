@@ -6,6 +6,7 @@ import tqdm
 from linear_projection import LinearProjection
 from knights_tour import KnightsTour
 from qd_task import QDTask
+from strawman_task import StrawMan
 
 
 def main(task: str = "linear_projection",
@@ -16,8 +17,12 @@ def main(task: str = "linear_projection",
             parameter_space_dims=20,
             function="sphere",
         )
-    if task == "knights_tour":
+    elif task == "knights_tour":
         task_instance = KnightsTour("vae")
+    elif task == "strawman":
+        print("using strawman")
+        task_instance = StrawMan(parameter_space_dims=10)
+
     else:
         raise ValueError(f"Unknown task `{task}`")
 
