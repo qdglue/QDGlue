@@ -1,4 +1,8 @@
-"""Second version of qd_rng adapted to new QDTask interface."""
+"""Second version of qd_rng adapted to new QDTask interface.
+
+Usage:
+    python qd_rng_2.py --help
+"""
 import fire
 import numpy as np
 import tqdm
