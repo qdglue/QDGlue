@@ -44,8 +44,8 @@ class StrawMan(QDTask):
 
         objectives =  2/(1+np.exp(-0.001*self._tick)) -1 
 
-        print(self._tick,objectives)
-        print(measures)
+        #print(self._tick,objectives)
+        #print(measures)
                                         
         objective_batch.append(objectives)
         measures_batch.append(measures)
