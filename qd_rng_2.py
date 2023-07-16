@@ -4,6 +4,7 @@ import numpy as np
 import tqdm
 
 from linear_projection import LinearProjection
+from knights_tour import KnightsTour
 from qd_task import QDTask
 
 
@@ -15,12 +16,18 @@ def main(task: str = "linear_projection",
             parameter_space_dims=20,
             function="sphere",
         )
+    if task == "knights_tour":
+        task_instance = KnightsTour("vae")
     else:
         raise ValueError(f"Unknown task `{task}`")
 
     for itr in tqdm.trange(iterations):
         parameters = np.random.random(size=(batch_size,
                                             task_instance.parameter_space_dims))
+        
+        if task_instance.parameter_type == "discrete":
+            parameters = np.floor(parameters).astype(int)
+
         evaluations = task_instance.evaluate(parameters)
 
         # TODO: Do something with evaluations -- insert into an archive, etc.
