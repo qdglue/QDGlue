@@ -131,3 +131,4 @@ results/
 *.vim
 .DS_Store
 .project
+.idea/
