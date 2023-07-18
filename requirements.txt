@@ -3,3 +3,6 @@ ribs==0.5.2
 fire
 tqdm
 torch
+jax
+jaxlib
+gymnasium

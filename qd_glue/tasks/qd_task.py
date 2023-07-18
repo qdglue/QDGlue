@@ -80,10 +80,10 @@ class QDTask(ABC):
         # TODO(btjanaka): Define the return type here - string, enum, int? I
         # would probably go with an Enum since we have a limited set of choices.
 
-    @property
-    @abstractmethod
-    def parameter_space(self) -> gymnasium.spaces.Space:
-        ...
+    # @property
+    # @abstractmethod
+    # def parameter_space(self) -> gymnasium.spaces.Space:
+    #     ...
 
     def get_initial_parameters(self,
                                seed: int,
