@@ -7,6 +7,7 @@ import gymnasium as gymnasium
 import jax as jax
 import jax.numpy as jnp
 import numpy as np
+from qd_glue.types import RNGKey, Solution
 
 
 class QDTask(ABC):
@@ -23,9 +24,10 @@ class QDTask(ABC):
         # as we create more, it will become obvious what code and configuration
         # should be shared here.
 
+    @abc.abstractmethod
     def evaluate(self,
-                 parameters: jnp.ndarray,
-                 random_key: jnp.ndarray = None,
+                 parameters: Solution,
+                 random_key: RNGKey = None,
                  ) -> Tuple[jnp.ndarray, jnp.ndarray, Dict[str, jnp.ndarray]]:
         """Evaluates
 
@@ -57,12 +59,12 @@ class QDTask(ABC):
 
     @property
     @abstractmethod
-    def objective_space_dims(self):
+    def objective_space_dims(self) -> int:
         """Dimensions of the objective space."""
 
     @property
     @abstractmethod
-    def descriptor_space_dims(self):
+    def descriptor_space_dims(self) -> int:
         """Dimensions of the descriptor space."""
 
     @property
@@ -80,10 +82,10 @@ class QDTask(ABC):
         # TODO(btjanaka): Define the return type here - string, enum, int? I
         # would probably go with an Enum since we have a limited set of choices.
 
-    # @property
-    # @abstractmethod
-    # def parameter_space(self) -> gymnasium.spaces.Space:
-    #     ...
+    @property
+    @abstractmethod
+    def parameter_space(self) -> gymnasium.spaces.Space:
+        ...
 
     def get_initial_parameters(self,
                                seed: int,

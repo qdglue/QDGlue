@@ -3,7 +3,7 @@ from __future__ import annotations
 import flax.struct
 import jax
 from jax import numpy as jnp
-from kheperax.geoms import Pos, Segment
+from qd_glue.tasks.kheperax.geoms import Pos, Segment
 
 
 @flax.struct.dataclass

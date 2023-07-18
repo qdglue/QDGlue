@@ -6,3 +6,7 @@ torch
 jax
 jaxlib
 gymnasium
+qdax
+brax<0.0.14
+flax
+brax
