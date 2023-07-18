@@ -33,15 +33,21 @@ class QDTask(ABC):
             parameters: A batch of parameters to evaluate.
             random_key:
         Returns:
-            (batch_of_fitness, batch_of_descriptors, batch of extra_data)
+            (batch_of_fitness, batch_of_descriptors, dict containing batch of extra_data)
         """
         # TODO(Looka): added a random_key parameter (useful for JAX tasks
         #  requiring random numbers).
+        # btjanaka: We may want to generalize 'random_key' to something that works across all
+        # frameworks; e.g., random state
+
+        # TODO (btjanaka): Change the return type and inputs here to be "array-like"
+        # and add the "return_type" parameter.
 
         # TODO(btjanaka): How should we handle extra data in the returns here?
         # There's often a lot more info that we can return from evaluate().
         # Perhaps we can do something like `info` as is done in OpenAI Gym.
         # (Looka) : completely agreed! changed the function signature and return type
+        # btjanaka: LGTM!
         #
         # TODO(btjanaka): We should incorporate DQD domains here -- for example,
         # what argument should we pass in if we want to compute gradients in
