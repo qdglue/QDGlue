@@ -1,7 +1,7 @@
 """Linear projection benchmark."""
 import numpy as np
 
-from qd_task import QDTask
+from qd_glue.tasks.qd_task import QDTask
 
 
 class LinearProjection(QDTask):

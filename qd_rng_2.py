@@ -7,10 +7,9 @@ import fire
 import numpy as np
 import tqdm
 
-from linear_projection import LinearProjection
-from knights_tour import KnightsTour
-from qd_task import QDTask
-from strawman_task import StrawMan
+from qd_glue.tasks.linear_projection import LinearProjection
+from qd_glue.tasks.knights_tour import KnightsTour
+from qd_glue.tasks.strawman_task import StrawMan
 
 
 def main(task: str = "linear_projection",

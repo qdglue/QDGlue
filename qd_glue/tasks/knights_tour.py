@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
 
-from qd_task import QDTask
+from qd_glue.tasks.qd_task import QDTask
 
 #todo (rboldi) figure out if this is the right place to put these classes
 

@@ -7,8 +7,6 @@
 
 import numpy as np
 
-from qd_task import QDTask
-
 
 class QDRNG:
     # our expectation
