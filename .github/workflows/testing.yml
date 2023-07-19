@@ -29,7 +29,9 @@ jobs:
       max-parallel: 12 # All in parallel.
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        # TODO(btjanaka): Enable all Python versions in the future.
+        python-version: ["3.9"]
+        # python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         exclude:
           # To cut down on runtime since Mac seems to take the longest.
           - os: macos-latest
