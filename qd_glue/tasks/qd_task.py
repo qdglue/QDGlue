@@ -71,6 +71,8 @@ class QDTask(ABC):
     @abstractmethod
     def descriptor_space_bounds(self):
         """Bounds of the descriptor space."""
+        # TODO(looka): make this return a gymnasium.spaces.Box?
+        #  it would make it more convenient I believe.
 
     @property
     @abstractmethod
@@ -90,12 +92,12 @@ class QDTask(ABC):
     def get_initial_parameters(self,
                                seed: int,
                                number_parameters: int = 1,
-                               ) -> jnp.ndarray:
+                               ) -> np.ndarray:
         # TODO(Looka): added this method to generate random individuals
         #  for a given task
         parameter_space = self.parameter_space
         parameter_space.seed(seed)
-        initial_parameters = jnp.asarray([
+        initial_parameters = np.asarray([
             parameter_space.sample()
             for _ in range(number_parameters)
         ])

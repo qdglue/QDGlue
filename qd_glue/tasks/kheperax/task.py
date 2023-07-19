@@ -1,13 +1,16 @@
-from typing import Tuple, Dict
+from typing import Tuple, Union
 
 import gymnasium as gymnasium
-import jax.random
+
 import numpy as np
-from jax import numpy as jnp
+
+import jax.random
+import jax.numpy as jnp
+from jax.flatten_util import ravel_pytree
 
 from qd_glue.tasks.kheperax.environment import KheperaxEnvironment, KheperaxConfig
 from qd_glue.tasks.qd_task import QDTask
-from qd_glue.types import Solution, Info, RNGKey, Fitness, Descriptor
+from qd_glue.types import Solution, Info, RNGKey, Fitness, Descriptor, Params
 
 
 class KheperaxTask(QDTask):
@@ -21,30 +24,52 @@ class KheperaxTask(QDTask):
 
         random_key, subkey = jax.random.split(random_key)
         env, policy_network, scoring_fn = KheperaxEnvironment.create_default_task(kheperax_config=config_kheperax, random_key=subkey)
-        self._env = env
+        self._env : KheperaxEnvironment = env
         self._policy_network = policy_network
         self._scoring_fn = scoring_fn
 
         self._descriptor_space_bounds = [(0., 1.),
                                          (0., 1.)]
+        self._descriptor_space_bounds = jnp.array
         self._objective_space_dims = 1
-        self._parameter_space_dims =
-
-    def evaluate(self,
-                 parameters: Solution,
-                 random_key: RNGKey = None
-                 ) -> Tuple[Fitness, Descriptor, Info]:
 
         random_key, subkey = jax.random.split(random_key)
-        return self._scoring_fn(parameters, random_key)
+        fake_batch = jnp.zeros(shape=(1, env.observation_size))
+
+        random_key, subkey = jax.random.split(random_key)
+        example_init_parameters = self._policy_network.init(subkey, fake_batch)
+        flattened_parameters, _array_to_pytree_fn = ravel_pytree(example_init_parameters)
+
+        self._parameter_space_dims = len(flattened_parameters)
+        self._array_to_pytree_fn = _array_to_pytree_fn
+
+    def evaluate(self,
+                 params: Union[np.ndarray, jnp.ndarray],
+                 random_key: RNGKey = None,
+                 ) -> Tuple[Fitness, Descriptor, Info]:
+
+        params = jnp.asarray(params)
+
+        params_pytree = jax.vmap(self._array_to_pytree_fn)(params)
+
+        random_key, subkey = jax.random.split(random_key)
+        fitness, descriptor, info, _ = self._scoring_fn(params_pytree, random_key)
+
+        # TODO: casting values depending on return_type as suggested by Bryon
+        return np.asarray(fitness), np.asarray(descriptor), info
 
     @property
     def parameter_space(self) -> gymnasium.spaces.Space:
-        pass
+        return gymnasium.spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=(self._parameter_space_dims,),
+            dtype=np.float32,
+        )
 
     @property
     def parameter_space_dims(self) -> int:
-        pass
+        return self._parameter_space_dims
 
     @property
     def objective_space_dims(self):
@@ -60,6 +85,7 @@ class KheperaxTask(QDTask):
 
     @property
     def parameter_type(self):
+        # TODO(looka): I think we can remove this, if we keep the parameter space method.
         return "continuous"
 
 

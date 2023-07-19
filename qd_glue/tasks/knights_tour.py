@@ -1,4 +1,5 @@
 """Knight's Tour benchmark."""
+import gymnasium
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
@@ -92,6 +93,8 @@ class KnightsTour(QDTask):
     """
 
     def __init__(self, method):
+        super().__init__()
+
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         print(f"using device: {device}")
         self._parameter_space_dims = 64
@@ -111,7 +114,7 @@ class KnightsTour(QDTask):
         if method == "vae":
             #todo (rboldi) figure out how to do gpu stuff between jax and pytorch
             self.fitness_model = VariationalAutoencoder(8, device)
-            self.fitness_model.load_state_dict(torch.load("vae_model.pt", map_location=torch.device(device)))
+            self.fitness_model.load_state_dict(torch.load("qd_glue/tasks/vae_model.pt", map_location=torch.device(device)))
             self.fitness_model = self.fitness_model.to(device)
             self.fitness_model.eval()
             self.fitness_model.freeze_encoder()
@@ -137,10 +140,12 @@ class KnightsTour(QDTask):
     
         return visited, valid_visited, len(valid_visited)
 
-    def evaluate(self, parameters):
+    def evaluate(self, parameters, random_key=None):
         #parameters is a list of 66 integers, with a leading batch dimension
         #the first 64 are the moves to make (1-8).
         # the last two are the start position (x, y)
+        # TODO(looka): should _parameter_space_dims be equal to 66 instead
+        #  instead of 64 then?
 
         #todo (rboldi) figure out how to batch the calculate function
         #todo (rboldi) documentation like bryon
@@ -200,3 +205,7 @@ class KnightsTour(QDTask):
     @property
     def parameter_type(self):
         return "discrete"
+
+    @property
+    def parameter_space(self) -> gymnasium.spaces.Space:
+        return gymnasium.spaces.MultiDiscrete(nvec=[8 for _ in range(self._parameter_space_dims)],)
