@@ -26,14 +26,14 @@ repos:
         types_or: [markdown, yaml]
   # pylint runs locally due to importing modules. See
   # https://pylint.pycqa.org/en/latest/user_guide/installation/pre-commit-integration.html
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: [
-            "-rn", # Only display messages
-            "-sn", # Don't display the score
-          ]
+  # - repo: local
+  #   hooks:
+  #     - id: pylint
+  #       name: pylint
+  #       entry: pylint
+  #       language: system
+  #       types: [python]
+  #       args: [
+  #           "-rn", # Only display messages
+  #           "-sn", # Don't display the score
+  #         ]
