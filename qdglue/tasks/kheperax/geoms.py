@@ -3,7 +3,6 @@ from __future__ import annotations
 import flax.struct
 import jax
 import jax.numpy as jnp
-
 from kheperax.posture import Posture
 
 
@@ -28,7 +27,9 @@ class Pos:
         y3 = segment.p1.y
         x4 = segment.p2.x
         y4 = segment.p2.y
-        u = ((x - x3) * (x4 - x3) + (y - y3) * (y4 - y3)) / ((x4 - x3) ** 2 + (y4 - y3) ** 2)
+        u = ((x - x3) * (x4 - x3) + (y - y3) * (y4 - y3)) / (
+            (x4 - x3) ** 2 + (y4 - y3) ** 2
+        )
         u_clipped = jnp.clip(u, 0, 1)
         return Pos(x3 + u_clipped * (x4 - x3), y3 + u_clipped * (y4 - y3))
 
@@ -66,8 +67,16 @@ class Segment:
             return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x)
 
         return jnp.logical_and(
-            jnp.logical_not(jnp.isclose(ccw(self.p1, other.p1, other.p2), ccw(self.p2, other.p1, other.p2))),
-            jnp.logical_not(jnp.isclose(ccw(self.p1, self.p2, other.p1), ccw(self.p1, self.p2, other.p2)))
+            jnp.logical_not(
+                jnp.isclose(
+                    ccw(self.p1, other.p1, other.p2), ccw(self.p2, other.p1, other.p2)
+                )
+            ),
+            jnp.logical_not(
+                jnp.isclose(
+                    ccw(self.p1, self.p2, other.p1), ccw(self.p1, self.p2, other.p2)
+                )
+            ),
         )
 
     def get_intersection_with(self, other: Segment) -> Pos:
@@ -87,4 +96,6 @@ class Segment:
                 ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d,
             )
 
-        return jax.lax.cond(self.check_intersection_with(other), is_true, is_false, None)
+        return jax.lax.cond(
+            self.check_intersection_with(other), is_true, is_false, None
+        )

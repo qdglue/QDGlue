@@ -26,15 +26,17 @@ class Posture:
     def add_pos(self, p: Posture):
         return self.add_pos_xytheta(p.x, p.y, p.angle)
 
-    def add_pos_xytheta(self,
-                        x: jnp.ndarray,
-                        y: jnp.ndarray,
-                        theta: jnp.ndarray,
-                        ) -> Posture:
-        return Posture(self.x + x,
-                       self.y + y,
-                       self.normalize_angle(self.angle + theta),
-                       )
+    def add_pos_xytheta(
+        self,
+        x: jnp.ndarray,
+        y: jnp.ndarray,
+        theta: jnp.ndarray,
+    ) -> Posture:
+        return Posture(
+            self.x + x,
+            self.y + y,
+            self.normalize_angle(self.angle + theta),
+        )
 
     @staticmethod
     def normalize_angle(angle: jnp.ndarray) -> jnp.ndarray:
@@ -57,13 +59,12 @@ class Posture:
             delta_p = Posture(
                 x=d_l * jnp.cos(old_pos.angle),
                 y=d_l * jnp.sin(old_pos.angle),
-                angle=0.,
+                angle=0.0,
             )
             return delta_p
 
-        delta_p = jax.lax.cond(jnp.abs(alpha) > 1e-10,
-                               _if_alpha_high,
-                               _if_alpha_low,
-                               None)
+        delta_p = jax.lax.cond(
+            jnp.abs(alpha) > 1e-10, _if_alpha_high, _if_alpha_low, None
+        )
 
         return self.add_pos(delta_p)

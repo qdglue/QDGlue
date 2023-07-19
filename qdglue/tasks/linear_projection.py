@@ -16,8 +16,7 @@ class LinearProjection(QDTask):
     def __init__(self, parameter_space_dims, function):
         self._parameter_space_dims = parameter_space_dims
         max_bound = parameter_space_dims / 2 * 5.12
-        self._measure_space_dims = [(-max_bound, max_bound),
-                                    (-max_bound, max_bound)]
+        self._measure_space_dims = [(-max_bound, max_bound), (-max_bound, max_bound)]
 
         # TODO(btjanaka): Add rastrigin support
         if function not in ["sphere"]:
@@ -52,7 +51,7 @@ class LinearProjection(QDTask):
 
         # Normalize the objective to the range [0, 100] where 100 is optimal.
         best_obj = 0.0
-        worst_obj = (-5.12 - sphere_shift)**2 * dim
+        worst_obj = (-5.12 - sphere_shift) ** 2 * dim
         raw_obj = np.sum(np.square(solution_batch - sphere_shift), axis=1)
         objective_batch = (raw_obj - worst_obj) / (best_obj - worst_obj) * 100
 
@@ -65,8 +64,8 @@ class LinearProjection(QDTask):
         clipped[clip_mask] = 5.12 / clipped[clip_mask]
         measures_batch = np.concatenate(
             (
-                np.sum(clipped[:, :dim // 2], axis=1, keepdims=True),
-                np.sum(clipped[:, dim // 2:], axis=1, keepdims=True),
+                np.sum(clipped[:, : dim // 2], axis=1, keepdims=True),
+                np.sum(clipped[:, dim // 2 :], axis=1, keepdims=True),
             ),
             axis=1,
         )

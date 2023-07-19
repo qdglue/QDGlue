@@ -5,8 +5,7 @@ from typing import List
 import flax.struct
 import jax.tree_util
 from jax import numpy as jnp
-
-from kheperax.geoms import Segment, Pos
+from kheperax.geoms import Pos, Segment
 
 
 @flax.struct.dataclass
@@ -32,12 +31,14 @@ class Maze:
 
     @classmethod
     def create_default_maze(cls):
-        return cls.create(segments_list=[
-            Segment(Pos(0.25, 0.25), Pos(0.25, 0.75)),
-            Segment(Pos(0.14, 0.45), Pos(0., 0.65)),
-            Segment(Pos(0.25, 0.75), Pos(0., 0.8)),
-            Segment(Pos(0.25, 0.75), Pos(0.66, 0.875)),
-            Segment(Pos(0.355, 0.), Pos(0.525, 0.185)),
-            Segment(Pos(0.25, 0.5), Pos(0.75, 0.215)),
-            Segment(Pos(1., 0.25), Pos(0.435, 0.55)),
-        ])
+        return cls.create(
+            segments_list=[
+                Segment(Pos(0.25, 0.25), Pos(0.25, 0.75)),
+                Segment(Pos(0.14, 0.45), Pos(0.0, 0.65)),
+                Segment(Pos(0.25, 0.75), Pos(0.0, 0.8)),
+                Segment(Pos(0.25, 0.75), Pos(0.66, 0.875)),
+                Segment(Pos(0.355, 0.0), Pos(0.525, 0.185)),
+                Segment(Pos(0.25, 0.5), Pos(0.75, 0.215)),
+                Segment(Pos(1.0, 0.25), Pos(0.435, 0.55)),
+            ]
+        )

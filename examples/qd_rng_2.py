@@ -12,9 +12,7 @@ from qdglue.tasks.linear_projection import LinearProjection
 from qdglue.tasks.strawman_task import StrawMan
 
 
-def main(task: str = "linear_projection",
-         iterations: int = 1000,
-         batch_size: int = 32):
+def main(task: str = "linear_projection", iterations: int = 1000, batch_size: int = 32):
     if task == "linear_projection":
         task_instance = LinearProjection(
             parameter_space_dims=20,
@@ -30,8 +28,9 @@ def main(task: str = "linear_projection",
         raise ValueError(f"Unknown task `{task}`")
 
     for itr in tqdm.trange(iterations):
-        parameters = np.random.random(size=(batch_size,
-                                            task_instance.parameter_space_dims))
+        parameters = np.random.random(
+            size=(batch_size, task_instance.parameter_space_dims)
+        )
 
         if task_instance.parameter_type == "discrete":
             parameters = np.floor(parameters).astype(int)

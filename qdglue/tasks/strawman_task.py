@@ -3,7 +3,8 @@ import numpy as np
 
 from qdglue.tasks.qd_task import QDTask
 
-#2/(1+exp(-x)) -1
+# 2/(1+exp(-x)) -1
+
 
 class StrawMan(QDTask):
     """Implementation of a strawman projection domain.
@@ -42,15 +43,15 @@ class StrawMan(QDTask):
 
         measures = np.random.random(size=(batch_size, self._measure_space_dims))
 
-        objectives =  2/(1+np.exp(-0.001*self._tick)) -1 
+        objectives = 2 / (1 + np.exp(-0.001 * self._tick)) - 1
 
-        #print(self._tick,objectives)
-        #print(measures)
-                                        
+        # print(self._tick,objectives)
+        # print(measures)
+
         objective_batch.append(objectives)
         measures_batch.append(measures)
 
-        self._tick+=1
+        self._tick += 1
 
         return (
             objective_batch,

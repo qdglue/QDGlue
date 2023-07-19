@@ -11,14 +11,14 @@ import numpy as np
 class QDRNG:
     # our expectation
     # evaLFn is a class that contains
-    '''
-    N 
-    D 
+    """
+    N
+    D
     F
     evalFn
     Binary?
     Archive is in EvalInstance
-    '''
+    """
 
     def __init__(self, evalInstance):
         self.evalInstance = evalInstance
@@ -26,12 +26,12 @@ class QDRNG:
 
     def emit(self):
         parameterSpaceDim = self.evalInstance.N
-        #descriptorSpaceDim =  self.evalInstance.D
-        #fitnessSpaceDim = self.evalInstance.F
+        # descriptorSpaceDim =  self.evalInstance.D
+        # fitnessSpaceDim = self.evalInstance.F
         isBinary = self.B
 
         parameters = np.random.random(parameterSpace)
-        #note To Future Self: make elegant
+        # note To Future Self: make elegant
         if isBinary:
             parameters[parameters < 0.5] = 0
             parameters[parameters >= 0.5] = 1
@@ -39,11 +39,11 @@ class QDRNG:
         return parameters
 
     def add(self, parameters, measures, fitness):
-        '''
+        """
         parameters is the parameters we just evaluted
         measures is the objective mesures
-        fitness the fitness measure 
-        '''
+        fitness the fitness measure
+        """
         return None
 
 
@@ -52,5 +52,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()

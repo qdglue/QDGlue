@@ -6,7 +6,6 @@ import jax
 import jax.numpy as jnp
 from typing_extensions import TypeAlias
 
-
 # MDP types
 Observation: TypeAlias = jnp.ndarray
 Action: TypeAlias = jnp.ndarray
