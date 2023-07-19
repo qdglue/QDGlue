@@ -1,12 +1,20 @@
 """Provides QDTask."""
-import abc
 from abc import ABC, abstractmethod
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
-import gymnasium as gymnasium
 import jax as jax
 import jax.numpy as jnp
 import numpy as np
+from numpy.typing import ArrayLike
+
+# TODO(btjanaka): Since this is an abstract class, I think we should aim to make
+# it independent of any framework. This way, anyone can easily install qdglue
+# and import just this class. Think of someone who wants to design a task using
+# PyTorch, and all they need from us is this class. They should not have to
+# install JAX to develop their task.
+#
+# I will argue that we should make an exception for NumPy because it is so
+# universal, but we can also aim to eliminate it as well.
 
 
 class QDTask(ABC):
@@ -23,10 +31,11 @@ class QDTask(ABC):
         # as we create more, it will become obvious what code and configuration
         # should be shared here.
 
-    def evaluate(self,
-                 parameters: jnp.ndarray,
-                 random_key: jnp.ndarray = None,
-                 ) -> Tuple[jnp.ndarray, jnp.ndarray, Dict[str, jnp.ndarray]]:
+    def evaluate(
+        self,
+        parameters: ArrayLike,
+        random_key: ArrayLike = None,
+    ) -> Tuple[ArrayLike, ArrayLike, Dict[str, ArrayLike]]:
         """Evaluates
 
         Args:
@@ -52,7 +61,6 @@ class QDTask(ABC):
         # TODO(btjanaka): We should incorporate DQD domains here -- for example,
         # what argument should we pass in if we want to compute gradients in
         # this function? What should we return if we are computing gradients?
-
 
     @property
     @abstractmethod
@@ -91,16 +99,24 @@ class QDTask(ABC):
     # def parameter_space(self) -> gymnasium.spaces.Space:
     #     ...
 
-    def get_initial_parameters(self,
-                               seed: int,
-                               number_parameters: int = 1,
-                               ) -> jnp.ndarray:
+    def get_initial_parameters(
+        self,
+        seed: int,
+        number_parameters: int = 1,
+    ) -> ArrayLike:
         # TODO(Looka): added this method to generate random individuals
         #  for a given task
+        #
+        # btjanaka: I think we should prefer to leave this code up to the
+        # individual tasks. Each task tends to have its own definition of what a
+        # good initial solution is; e.g., in linear projection I just want a
+        # zero vector, but in deep RL tasks, I might want Xavier initialization.
+        # Adding this code here also binds the QDTask class to a specific
+        # framework, which I think we should try to avoid since it forces people
+        # to install something just to get this class.
         parameter_space = self.parameter_space
         parameter_space.seed(seed)
-        initial_parameters = jnp.asarray([
-            parameter_space.sample()
-            for _ in range(number_parameters)
-        ])
+        initial_parameters = jnp.asarray(
+            [parameter_space.sample() for _ in range(number_parameters)]
+        )
         return initial_parameters

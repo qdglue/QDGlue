@@ -1,0 +1,39 @@
+site_name: QDGlue
+site_author: QD Glue Team
+copyright: "Copyright &copy; 2023 QD Glue Team"
+site_url: https://quality-diversity.github.io # TODO(btjanaka)
+repo_url: https://github.com/qdglue/QDGlue
+repo_name: qdglue/qdglue
+nav:
+  - Home: index.md
+  - Contributing: contributing.md
+  - API Reference: reference/
+plugins:
+  - search
+  - mkdocstrings:
+      watch:
+        - qdglue
+      handlers:
+        python:
+          rendering:
+            show_object_full_path: True
+            show_root_toc_entry: False
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+theme:
+  name: material
+  # palette:
+  # accent: blue
+  icon:
+    logo: material/account-cowboy-hat # yeehaw
+  # TODO(btjanaka)
+  # favicon: img/favicon.svg
+extra_css:
+  - css/custom.css
+  - css/mkdocstrings.css

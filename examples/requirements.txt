@@ -1,0 +1,4 @@
+ribs==0.5.2
+qdax==0.2.3
+fire
+tqdm
