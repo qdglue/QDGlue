@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from kheperax.geoms import Pos, Segment
+from qdglue.tasks.kheperax.geoms import Pos, Segment
 
 
 class RenderingTools:

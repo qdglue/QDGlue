@@ -6,11 +6,13 @@ import flax.struct
 import jax.lax
 import jax.tree_util
 from jax import numpy as jnp
-from kheperax.geoms import Disk, Pos, Segment
-from kheperax.laser import Laser
-from kheperax.maze import Maze
-from kheperax.posture import Posture
-from kheperax.tree_utils import get_batch_size
+
+
+from qdglue.tasks.kheperax.geoms import Pos, Disk, Segment
+from qdglue.tasks.kheperax.laser import Laser
+from qdglue.tasks.kheperax.maze import Maze
+from qdglue.tasks.kheperax.posture import Posture
+from qdglue.tasks.kheperax.tree_utils import get_batch_size
 
 
 @flax.struct.dataclass

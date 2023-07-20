@@ -2,8 +2,11 @@
 
 from typing import Dict, Generic, TypeVar, Union
 
+import brax.envs
 import jax
 import jax.numpy as jnp
+import numpy as np
+from chex import ArrayTree
 from typing_extensions import TypeAlias
 
 # MDP types
@@ -20,10 +23,12 @@ Fitness: TypeAlias = jnp.ndarray
 Genotype: TypeAlias = ArrayTree
 Descriptor: TypeAlias = jnp.ndarray
 Centroid: TypeAlias = jnp.ndarray
+Gradient: TypeAlias = jnp.ndarray
 
 Skill: TypeAlias = jnp.ndarray
 
 ExtraScores: TypeAlias = Dict[str, ArrayTree]
+Info: TypeAlias = Dict[str, ArrayTree]
 
 Mask: TypeAlias = jnp.ndarray
 

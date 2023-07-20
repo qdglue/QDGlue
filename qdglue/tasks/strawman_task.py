@@ -1,4 +1,5 @@
 """Linear projection benchmark."""
+import gymnasium as gymnasium
 import numpy as np
 
 from qdglue.tasks.qd_task import QDTask
@@ -17,14 +18,17 @@ class StrawMan(QDTask):
     """
 
     def __init__(self, parameter_space_dims):
+        super().__init__()
+
         self._parameter_space_dims = parameter_space_dims
         self._tick = 0
         self._measure_space_dims = 2
 
-    def evaluate(self, parameters):
+    def evaluate(self, parameters: np.ndarray, random_key=None):
         """
         Args:
             parameters (np.ndarray): (batch_size, dim) batch of solutions.
+            random_key (): unused JAX random key
         Returns:
             objective_batch (np.ndarray): (batch_size,) batch of objectives.
             objective_grad_batch (np.ndarray): (batch_size, solution_dim) batch of
@@ -87,3 +91,11 @@ class StrawMan(QDTask):
     def parameter_type(self):
         # TODO(btjanaka): Return type?
         return "continuous"
+
+    @property
+    def parameter_space(self) -> gymnasium.spaces.Space:
+        return gymnasium.spaces.Box(low=-np.inf,
+                                    high=np.inf,
+                                    shape=(self._parameter_space_dims,),
+                                    dtype=np.float32,
+                                    )

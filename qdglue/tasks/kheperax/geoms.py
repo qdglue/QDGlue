@@ -3,7 +3,9 @@ from __future__ import annotations
 import flax.struct
 import jax
 import jax.numpy as jnp
-from kheperax.posture import Posture
+
+
+from qdglue.tasks.kheperax.posture import Posture
 
 
 @flax.struct.dataclass
