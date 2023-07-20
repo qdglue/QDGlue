@@ -8,10 +8,9 @@ import jax.random
 import numpy as np
 import tqdm
 
-
 from qdglue.tasks.kheperax.task import KheperaxTask
-from qdglue.tasks.linear_projection import LinearProjection
 from qdglue.tasks.knights_tour import KnightsTour
+from qdglue.tasks.linear_projection import LinearProjection
 from qdglue.tasks.strawman_task import StrawMan
 
 
@@ -38,7 +37,9 @@ def main(task: str = "linear_projection", iterations: int = 1000, batch_size: in
         raise ValueError(f"Unknown task `{task}`")
 
     for itr in tqdm.trange(iterations):
-        parameters = task_instance.get_initial_parameters(seed=42, number_parameters=batch_size)
+        parameters = task_instance.get_initial_parameters(
+            seed=42, number_parameters=batch_size
+        )
 
         if task_instance.parameter_type == "discrete":
             parameters = np.floor(parameters).astype(int)
