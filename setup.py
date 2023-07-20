@@ -12,6 +12,7 @@ with open("HISTORY.md") as history_file:
 # TODO(btjanaka): Figure out what deps need to go in the readthedocs config.
 install_requires = [
     "numpy>=1.20.0",  # >=1.20.0 is when numpy.typing becomes available.
+    "gymnasium>=0.26.0",
 ]
 
 extras_require = {
@@ -23,7 +24,6 @@ extras_require = {
         # TODO(looka): Specify versions here.
         "jax",
         "jaxlib",
-        "gymnasium",
     ],
     # All dependencies except for dev. Don't worry if there are duplicate
     # dependencies, since setuptools automatically handles duplicates.
