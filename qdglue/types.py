@@ -5,9 +5,13 @@ from typing import Dict, Generic, TypeVar, Union
 import brax.envs
 import jax
 import jax.numpy as jnp
+
 import numpy as np
+from numpy.typing import ArrayLike
+
 from chex import ArrayTree
 from typing_extensions import TypeAlias
+
 
 # MDP types
 Observation: TypeAlias = jnp.ndarray
@@ -19,7 +23,8 @@ Params: TypeAlias = ArrayTree
 
 # Evolution types
 StateDescriptor: TypeAlias = jnp.ndarray
-Fitness: TypeAlias = jnp.ndarray
+Fitness: TypeAlias = ArrayLike
+Feature: TypeAlias = ArrayLike
 Genotype: TypeAlias = ArrayTree
 Descriptor: TypeAlias = jnp.ndarray
 Centroid: TypeAlias = jnp.ndarray
