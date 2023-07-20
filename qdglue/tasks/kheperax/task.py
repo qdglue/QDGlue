@@ -1,22 +1,17 @@
 from typing import Tuple, Union
 
-
 import gymnasium as gymnasium
-
-import numpy as np
-
-import jax.random
 import jax.numpy as jnp
-
+import jax.random
+import numpy as np
 from jax.flatten_util import ravel_pytree
 
-from qdglue.tasks.kheperax.environment import KheperaxEnvironment, KheperaxConfig
+from qdglue.tasks.kheperax.environment import KheperaxConfig, KheperaxEnvironment
 from qdglue.tasks.qd_task import QDTask
-from qdglue.types import RNGKey, Fitness, Descriptor, Info
+from qdglue.types import Feature, Fitness, Info, RNGKey
 
 
 class KheperaxTask(QDTask):
-
     def __init__(self, random_key: RNGKey, config_kheperax=None):
         super().__init__()
 
@@ -24,13 +19,14 @@ class KheperaxTask(QDTask):
             config_kheperax = KheperaxConfig.get_default()
 
         random_key, subkey = jax.random.split(random_key)
-        env, policy_network, scoring_fn = KheperaxEnvironment.create_default_task(kheperax_config=config_kheperax, random_key=subkey)
-        self._env : KheperaxEnvironment = env
+        env, policy_network, scoring_fn = KheperaxEnvironment.create_default_task(
+            kheperax_config=config_kheperax, random_key=subkey
+        )
+        self._env: KheperaxEnvironment = env
         self._policy_network = policy_network
         self._scoring_fn = scoring_fn
 
-        self._descriptor_space_bounds = [(0., 1.),
-                                         (0., 1.)]
+        self._descriptor_space_bounds = [(0.0, 1.0), (0.0, 1.0)]
         self._descriptor_space_bounds = jnp.array
         self._objective_space_dims = 1
 
@@ -40,17 +36,18 @@ class KheperaxTask(QDTask):
 
         random_key, subkey = jax.random.split(random_key)
         example_init_parameters = self._policy_network.init(subkey, fake_batch)
-        flattened_parameters, _array_to_pytree_fn = ravel_pytree(example_init_parameters)
-
+        flattened_parameters, _array_to_pytree_fn = ravel_pytree(
+            example_init_parameters
+        )
 
         self._parameter_space_dims = len(flattened_parameters)
         self._array_to_pytree_fn = _array_to_pytree_fn
 
-    def evaluate(self,
-                 params: Union[np.ndarray, jnp.ndarray],
-                 random_key: RNGKey = None,
-                 ) -> Tuple[Fitness, Descriptor, Info]:
-
+    def evaluate(
+        self,
+        params: Union[np.ndarray, jnp.ndarray],
+        random_key: RNGKey = None,
+    ) -> Tuple[Fitness, Feature, Info]:
         params = jnp.asarray(params)
 
         params_pytree = jax.vmap(self._array_to_pytree_fn)(params)

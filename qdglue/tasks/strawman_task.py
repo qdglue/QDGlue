@@ -94,8 +94,9 @@ class StrawMan(QDTask):
 
     @property
     def parameter_space(self) -> gymnasium.spaces.Space:
-        return gymnasium.spaces.Box(low=-np.inf,
-                                    high=np.inf,
-                                    shape=(self._parameter_space_dims,),
-                                    dtype=np.float32,
-                                    )
+        return gymnasium.spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=(self._parameter_space_dims,),
+            dtype=np.float32,
+        )

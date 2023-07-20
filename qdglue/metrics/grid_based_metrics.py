@@ -11,6 +11,7 @@ from qdglue.types import Feature, Fitness
 @dataclasses.dataclass
 class DiscreteArchiveMetrics:
     """Holds statistics about an archive."""
+
     # Proportion of cells in the archive that have an elite - always in the
     # range :math:`[0,1]`.
     coverage: float
@@ -28,24 +29,25 @@ class DiscreteArchiveMetrics:
 
 
 class DiscreteArchiveMetricsCalculator(ABC):
-    def __init__(self,
-                 fitness_bounds: gymnasium.spaces.Box,
-                 num_points_ccdf: int = 100,
-                 ):
+    def __init__(
+        self,
+        fitness_bounds: gymnasium.spaces.Box,
+        num_points_ccdf: int = 100,
+    ):
         assert np.all(np.isfinite(fitness_bounds.low)) and np.all(
             np.isfinite(fitness_bounds.high)
         ), "Fitness bounds must be finite"
         assert (
-                np.prod(fitness_bounds.shape) == 1
+            np.prod(fitness_bounds.shape) == 1
         ), "Only scalar fitnesses are supported for now"
 
         self.fitness_bounds = fitness_bounds
         self.num_points_ccdf = num_points_ccdf
 
     def get_metrics(
-            self,
-            fitnesses: Fitness,
-            features: Feature,
+        self,
+        fitnesses: Fitness,
+        features: Feature,
     ) -> DiscreteArchiveMetrics:
         self._check_validity_features(features)
         self._check_validity_fitnesses(fitnesses)
@@ -54,7 +56,7 @@ class DiscreteArchiveMetricsCalculator(ABC):
         # The empty cells do not appear in the best_fitnesses array
         best_fitnesses = self._extract_best_fitnesses_per_cell(fitnesses, features)
         best_fitnesses_normalized = (best_fitnesses - self.fitness_bounds.low) / (
-                self.fitness_bounds.high - self.fitness_bounds.low
+            self.fitness_bounds.high - self.fitness_bounds.low
         )
         # TODO(looka): support case where fitness_bounds.high == +inf, and just apply the offset in that case?
 
@@ -76,8 +78,8 @@ class DiscreteArchiveMetricsCalculator(ABC):
         )
 
     def _compute_ccdf(
-            self,
-            best_fitnesses: Fitness,
+        self,
+        best_fitnesses: Fitness,
     ) -> np.ndarray:
         fitnesses_intermediate = np.linspace(
             start=self.fitness_bounds.low,
@@ -114,9 +116,9 @@ class DiscreteArchiveMetricsCalculator(ABC):
 
     @abstractmethod
     def _extract_best_fitnesses_per_cell(
-            self,
-            fitnesses: Fitness,
-            features: Feature,
+        self,
+        fitnesses: Fitness,
+        features: Feature,
     ) -> Fitness:
         """
         Returns an array of the best fitnesses per cell.
@@ -125,8 +127,13 @@ class DiscreteArchiveMetricsCalculator(ABC):
 
 
 class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
-    def __init__(self, feature_space: gymnasium.spaces.Box, fitness_bounds: gymnasium.spaces.Box,
-                 resolution: Tuple[int, ...], num_points_ccdf: int = 100):
+    def __init__(
+        self,
+        feature_space: gymnasium.spaces.Box,
+        fitness_bounds: gymnasium.spaces.Box,
+        resolution: Tuple[int, ...],
+        num_points_ccdf: int = 100,
+    ):
         super().__init__(fitness_bounds, num_points_ccdf)
         self.feature_space = feature_space
 
@@ -137,9 +144,9 @@ class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
         self.resolution = resolution
 
     def _extract_best_fitnesses_per_cell(
-            self,
-            fitnesses: Fitness,
-            features: Feature,
+        self,
+        fitnesses: Fitness,
+        features: Feature,
     ) -> Fitness:
         """
         Returns an array of the best fitnesses per cell.
@@ -150,9 +157,9 @@ class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
         resolution_array = np.asarray(self.resolution, dtype=np.int32)
 
         features_multi_indexes = (
-                resolution_array
-                * (features - self.feature_space.low)
-                / (self.feature_space.high - self.feature_space.low)
+            resolution_array
+            * (features - self.feature_space.low)
+            / (self.feature_space.high - self.feature_space.low)
         )
         features_multi_indexes = np.floor(features_multi_indexes).astype(np.int32)
 
@@ -186,11 +193,12 @@ class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
 
 
 class CVTMetricsCalculator(DiscreteArchiveMetricsCalculator):
-    def __init__(self,
-                 fitness_bounds: gymnasium.spaces.Box,
-                 centroids: Feature,
-                 num_points_ccdf: int = 100,
-                 ):
+    def __init__(
+        self,
+        fitness_bounds: gymnasium.spaces.Box,
+        centroids: Feature,
+        num_points_ccdf: int = 100,
+    ):
         super().__init__(fitness_bounds, num_points_ccdf)
 
         self.centroids = centroids
@@ -206,10 +214,11 @@ class CVTMetricsCalculator(DiscreteArchiveMetricsCalculator):
         distances = np.linalg.norm(self.centroids - feature, axis=1)
         return np.argmin(distances).item()
 
-    def _extract_best_fitnesses_per_cell(self,
-                                         fitnesses: Fitness,
-                                         features: Feature,
-                                         ) -> Fitness:
+    def _extract_best_fitnesses_per_cell(
+        self,
+        fitnesses: Fitness,
+        features: Feature,
+    ) -> Fitness:
         """
         Returns an array of the best fitnesses per cell.
         The empty cells do not appear in the returned array.
@@ -244,9 +253,7 @@ def example_grid_based_metrics():
 
     metrics = calculator.get_metrics(
         fitnesses=np.array([0.3, 0.5, 0.7]),
-        features=np.array([[0.55, 0.55],
-                           [0.55, 0.551],
-                           [0.3, 0.3]]),
+        features=np.array([[0.55, 0.55], [0.55, 0.551], [0.3, 0.3]]),
     )
 
     print("Grid based metrics:", metrics)
@@ -255,11 +262,14 @@ def example_grid_based_metrics():
 def example_cvt_based_metrics():
     fitness_bounds = gymnasium.spaces.Box(low=0.0, high=1.0, shape=(1,))
 
-    centroids = np.array([[0.1, 0.1],
-                          [0.9, 0.9],
-                          [0.1, 0.9],
-                          [0.9, 0.1],
-                          ])
+    centroids = np.array(
+        [
+            [0.1, 0.1],
+            [0.9, 0.9],
+            [0.1, 0.9],
+            [0.9, 0.1],
+        ]
+    )
 
     calculator = CVTMetricsCalculator(
         fitness_bounds=fitness_bounds,
@@ -268,9 +278,7 @@ def example_cvt_based_metrics():
 
     metrics = calculator.get_metrics(
         fitnesses=np.array([0.3, 0.5, 0.7]),
-        features=np.array([[0.9, 0.9],
-                           [0.9, 0.91],
-                           [0.3, 0.3]]),
+        features=np.array([[0.9, 0.9], [0.9, 0.91], [0.3, 0.3]]),
     )
 
     print("CVT based metrics:", metrics)

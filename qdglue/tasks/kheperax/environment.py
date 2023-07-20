@@ -1,23 +1,21 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import List, Tuple, Dict, Any
+from typing import Any, Dict, List, Tuple
 
 import brax.envs
 import flax.struct
 import jax.tree_util
 from jax import numpy as jnp
 from qdax.core.neuroevolution.networks.networks import MLP
-from qdax.environments.bd_extractors import (
-    get_final_xy_position,
-)
+from qdax.environments.bd_extractors import get_final_xy_position
 from qdax.tasks.brax_envs import create_brax_scoring_fn
-from qdglue.types import RNGKey
 
 from qdglue.tasks.kheperax.maze import Maze
 from qdglue.tasks.kheperax.rendering_tools import RenderingTools
 from qdglue.tasks.kheperax.robot import Robot
 from qdglue.tasks.kheperax.type_fixer_wrapper import TypeFixerWrapper
+from qdglue.types import RNGKey
 
 
 @dataclasses.dataclass
@@ -48,6 +46,7 @@ class KheperaxState:
     """
     Environment state for training and inference.
     """
+
     robot: Robot
     maze: Maze
     obs: jnp.ndarray
@@ -64,16 +63,21 @@ class KheperaxEnvironment(brax.envs.env.Env):
         super().__init__(None, **kwargs)
 
     @classmethod
-    def create_default_task(cls,
-                            kheperax_config: KheperaxConfig,
-                            random_key,
-                            ):
+    def create_default_task(
+        cls,
+        kheperax_config: KheperaxConfig,
+        random_key,
+    ):
         env = cls(kheperax_config)
-        env = brax.envs.wrappers.EpisodeWrapper(env, kheperax_config.episode_length, action_repeat=1)
+        env = brax.envs.wrappers.EpisodeWrapper(
+            env, kheperax_config.episode_length, action_repeat=1
+        )
         env = TypeFixerWrapper(env)
 
         # Init policy network
-        policy_layer_sizes = kheperax_config.mlp_policy_hidden_layer_sizes + (env.action_size,)
+        policy_layer_sizes = kheperax_config.mlp_policy_hidden_layer_sizes + (
+            env.action_size,
+        )
         policy_network = MLP(
             layer_sizes=policy_layer_sizes,
             kernel_init=jax.nn.initializers.lecun_uniform(),
@@ -100,7 +104,7 @@ class KheperaxEnvironment(brax.envs.env.Env):
 
         random_key, subkey = jax.random.split(random_key)
         obs = self._get_obs(robot, self.kheperax_config.maze, random_key=subkey)
-        reward = 0.
+        reward = 0.0
         done = False
 
         info = {
@@ -121,8 +125,10 @@ class KheperaxEnvironment(brax.envs.env.Env):
 
     def _get_wheel_velocities(self, action, random_key):
         random_key, subkey = jax.random.split(random_key)
-        noise_wheel_velocities = jax.random.normal(subkey, shape=action.shape) \
-                                 * self.kheperax_config.std_noise_wheel_velocities
+        noise_wheel_velocities = (
+            jax.random.normal(subkey, shape=action.shape)
+            * self.kheperax_config.std_noise_wheel_velocities
+        )
 
         scale_actions = self.kheperax_config.action_scale
         wheel_velocities = action * scale_actions
@@ -135,18 +141,22 @@ class KheperaxEnvironment(brax.envs.env.Env):
         random_key = state.random_key
 
         # actions should be between -1 and 1
-        action = jnp.clip(action, -1., 1.)
+        action = jnp.clip(action, -1.0, 1.0)
 
         random_key, subkey = jax.random.split(random_key)
         wheel_velocities = self._get_wheel_velocities(action, subkey)
 
-        new_robot, bumper_measures = state.robot.move(wheel_velocities[0], wheel_velocities[1], state.maze)
+        new_robot, bumper_measures = state.robot.move(
+            wheel_velocities[0], wheel_velocities[1], state.maze
+        )
 
         random_key, subkey = jax.random.split(random_key)
-        obs = self._get_obs(new_robot, state.maze, bumper_measures=bumper_measures, random_key=subkey)
+        obs = self._get_obs(
+            new_robot, state.maze, bumper_measures=bumper_measures, random_key=subkey
+        )
 
         # reward penalizes high action values
-        reward = -1. * jnp.power(jnp.linalg.norm(wheel_velocities), 2.)
+        reward = -1.0 * jnp.power(jnp.linalg.norm(wheel_velocities), 2.0)
 
         # only stop at the end of the episode
         done = False
@@ -165,7 +175,9 @@ class KheperaxEnvironment(brax.envs.env.Env):
             random_key=new_random_key,
         )
 
-    def _get_obs(self, robot: Robot, maze: Maze, random_key, bumper_measures: jnp.ndarray = None) -> jnp.ndarray:
+    def _get_obs(
+        self, robot: Robot, maze: Maze, random_key, bumper_measures: jnp.ndarray = None
+    ) -> jnp.ndarray:
         random_key, subkey = jax.random.split(random_key)
         laser_measures = robot.laser_measures(maze, random_key=subkey)
 
@@ -190,61 +202,80 @@ class KheperaxEnvironment(brax.envs.env.Env):
 
     @property
     def behavior_descriptor_limits(self) -> Tuple[List[float], List[float]]:
-        return [0., 0.], [1., 1.]
+        return [0.0, 0.0], [1.0, 1.0]
 
     @property
     def backend(self) -> str:
         return "Kheperax"
 
-    def render(self, state: KheperaxState, ) -> jnp.ndarray:
+    def render(
+        self,
+        state: KheperaxState,
+    ) -> jnp.ndarray:
         # WARNING: only consider the maze is in the unit square
-        coeff_triangle = 3.
+        coeff_triangle = 3.0
         image = jnp.zeros(self.kheperax_config.resolution, dtype=jnp.float32)
-        image = RenderingTools.place_triangle(image,
-                                              point_1=(
-                                                  state.robot.posture.x + coeff_triangle * state.robot.radius * jnp.cos(
-                                                      state.robot.posture.angle),
-                                                  state.robot.posture.y + coeff_triangle * state.robot.radius * jnp.sin(
-                                                      state.robot.posture.angle)),
-                                              point_2=(state.robot.posture.x + state.robot.radius * jnp.cos(
-                                                  state.robot.posture.angle - jnp.pi / 2),
-                                                       state.robot.posture.y + state.robot.radius * jnp.sin(
-                                                           state.robot.posture.angle - jnp.pi / 2)),
-                                              point_3=(state.robot.posture.x + state.robot.radius * jnp.cos(
-                                                  state.robot.posture.angle + jnp.pi / 2),
-                                                       state.robot.posture.y + state.robot.radius * jnp.sin(
-                                                           state.robot.posture.angle + jnp.pi / 2)),
-                                              value=2.)
+        image = RenderingTools.place_triangle(
+            image,
+            point_1=(
+                state.robot.posture.x
+                + coeff_triangle
+                * state.robot.radius
+                * jnp.cos(state.robot.posture.angle),
+                state.robot.posture.y
+                + coeff_triangle
+                * state.robot.radius
+                * jnp.sin(state.robot.posture.angle),
+            ),
+            point_2=(
+                state.robot.posture.x
+                + state.robot.radius * jnp.cos(state.robot.posture.angle - jnp.pi / 2),
+                state.robot.posture.y
+                + state.robot.radius * jnp.sin(state.robot.posture.angle - jnp.pi / 2),
+            ),
+            point_3=(
+                state.robot.posture.x
+                + state.robot.radius * jnp.cos(state.robot.posture.angle + jnp.pi / 2),
+                state.robot.posture.y
+                + state.robot.radius * jnp.sin(state.robot.posture.angle + jnp.pi / 2),
+            ),
+            value=2.0,
+        )
 
-        image = RenderingTools.place_circle(image,
-                                            center=(state.robot.posture.x, state.robot.posture.y),
-                                            radius=state.robot.radius,
-                                            value=1.)
+        image = RenderingTools.place_circle(
+            image,
+            center=(state.robot.posture.x, state.robot.posture.y),
+            radius=state.robot.radius,
+            value=1.0,
+        )
 
-        white = jnp.array([1., 1., 1.])
-        blue = jnp.array([0., 0., 1.])
-        red = jnp.array([1., 0., 0.])
-        green = jnp.array([0., 1., 0.])
-        magenta = jnp.array([0.5, 0., 1.])
-        cyan = jnp.array([0., 1., 1.])
-        yellow = jnp.array([1., 1., 0.])
-        black = jnp.array([0., 0., 0.])
+        white = jnp.array([1.0, 1.0, 1.0])
+        blue = jnp.array([0.0, 0.0, 1.0])
+        red = jnp.array([1.0, 0.0, 0.0])
+        green = jnp.array([0.0, 1.0, 0.0])
+        magenta = jnp.array([0.5, 0.0, 1.0])
+        cyan = jnp.array([0.0, 1.0, 1.0])
+        yellow = jnp.array([1.0, 1.0, 0.0])
+        black = jnp.array([0.0, 0.0, 0.0])
 
-        image = RenderingTools.place_segments(image,
-                                              state.maze.walls,
-                                              value=5.)
+        image = RenderingTools.place_segments(image, state.maze.walls, value=5.0)
 
         index_to_color = {
-            0.: white,
-            1.: blue,
-            2.: magenta,
-            5.: black,
+            0.0: white,
+            1.0: blue,
+            2.0: magenta,
+            5.0: black,
         }
 
         def _map_colors(x):
             new_array = jnp.zeros((3,))
             for key, value in index_to_color.items():
-                new_array = jax.lax.cond(jnp.isclose(x, key), lambda _: value, lambda _: new_array, operand=None)
+                new_array = jax.lax.cond(
+                    jnp.isclose(x, key),
+                    lambda _: value,
+                    lambda _: new_array,
+                    operand=None,
+                )
             return new_array
 
         image = jax.vmap(jax.vmap(_map_colors))(image)

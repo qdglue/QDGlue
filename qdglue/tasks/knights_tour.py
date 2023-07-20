@@ -1,6 +1,5 @@
 """Knight's Tour benchmark."""
 import gymnasium
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -119,7 +118,11 @@ class KnightsTour(QDTask):
         if method == "vae":
             # todo (rboldi) figure out how to do gpu stuff between jax and pytorch
             self.fitness_model = VariationalAutoencoder(8, device)
-            self.fitness_model.load_state_dict(torch.load("qdglue/tasks/vae_model.pt", map_location=torch.device(device)))
+            self.fitness_model.load_state_dict(
+                torch.load(
+                    "qdglue/tasks/vae_model.pt", map_location=torch.device(device)
+                )
+            )
             self.fitness_model = self.fitness_model.to(device)
             self.fitness_model.eval()
             self.fitness_model.freeze_encoder()
@@ -223,4 +226,6 @@ class KnightsTour(QDTask):
 
     @property
     def parameter_space(self) -> gymnasium.spaces.Space:
-        return gymnasium.spaces.MultiDiscrete(nvec=[8 for _ in range(self._parameter_space_dims)],)
+        return gymnasium.spaces.MultiDiscrete(
+            nvec=[8 for _ in range(self._parameter_space_dims)],
+        )

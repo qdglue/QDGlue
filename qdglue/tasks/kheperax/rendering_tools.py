@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+
 from qdglue.tasks.kheperax.geoms import Pos, Segment
 
 

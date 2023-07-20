@@ -4,7 +4,6 @@ import flax.struct
 import jax
 import jax.numpy as jnp
 
-
 from qdglue.tasks.kheperax.posture import Posture
 
 

@@ -4,6 +4,7 @@ from typing import Dict, Tuple
 
 import gymnasium
 import numpy as np
+
 #  import jax as jax
 #  import jax.numpy as jnp
 #  import numpy as np
@@ -17,7 +18,6 @@ from numpy.typing import ArrayLike
 #
 # I will argue that we should make an exception for NumPy because it is so
 # universal, but we can also aim to eliminate it as well.
-
 
 
 class QDTask(ABC):

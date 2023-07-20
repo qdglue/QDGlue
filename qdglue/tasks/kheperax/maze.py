@@ -6,7 +6,7 @@ import flax.struct
 import jax.tree_util
 from jax import numpy as jnp
 
-from qdglue.tasks.kheperax.geoms import Segment, Pos
+from qdglue.tasks.kheperax.geoms import Pos, Segment
 
 
 @flax.struct.dataclass

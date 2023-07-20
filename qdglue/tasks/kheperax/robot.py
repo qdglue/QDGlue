@@ -7,8 +7,7 @@ import jax.lax
 import jax.tree_util
 from jax import numpy as jnp
 
-
-from qdglue.tasks.kheperax.geoms import Pos, Disk, Segment
+from qdglue.tasks.kheperax.geoms import Disk, Pos, Segment
 from qdglue.tasks.kheperax.laser import Laser
 from qdglue.tasks.kheperax.maze import Maze
 from qdglue.tasks.kheperax.posture import Posture
