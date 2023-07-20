@@ -40,7 +40,7 @@ class QDTask(ABC):
         parameters: ArrayLike,
         random_key: ArrayLike = None,
     ) -> Tuple[ArrayLike, ArrayLike, Dict[str, ArrayLike]]:
-        """Evaluates
+        """Evaluates.
 
         Args:
             parameters: A batch of parameters to evaluate.
@@ -94,7 +94,7 @@ class QDTask(ABC):
     @property
     @abstractmethod
     def parameter_type(self):
-        """Binary or continuous"""
+        """Binary or continuous."""
         # TODO(btjanaka): We should be more robust to different types of
         # solutions in the future; more to discuss here.
         #
@@ -121,6 +121,7 @@ class QDTask(ABC):
         # Adding this code here also binds the QDTask class to a specific
         # framework, which I think we should try to avoid since it forces people
         # to install something just to get this class.
+        #
         # Looka: no worries, this was just a placeholder. It is still possible
         #  to take the return_type into account to return something of the
         #  desired type. And I do not think there is any issue providing a
@@ -129,6 +130,19 @@ class QDTask(ABC):
         #  I'm uncommenting it now (and removing the JAX dependency here too)
         #  just to be able to push all my work. We'll decide later what we
         #  do of it.
+        #
+        # btjanaka: I still don't like the idea of providing a common
+        # get_initial_parameters() as it places too many assumptions on our
+        # abstract class. For instance, the current version assumes there will
+        # be sampling in this method, whereas many benchmarks just start at
+        # zero. It's also possible that a class handles the randomness with a
+        # seed passed in the constructor (like we do in pyribs components)
+        # rather than a seed passed in the method (more reminiscent of JAX).
+        # There's also an assumption on how the sampling is done; for instance,
+        # in the case of unbounded parameter spaces, gym's Box will sample from
+        # an exponential distribution, although a normal distribution is
+        # perfectly reasonable in many cases. Finally, it's also possible for
+        # users to just call task.parameter_space.sample() on their own.
 
         parameter_space = self.parameter_space
         parameter_space.seed(seed)
