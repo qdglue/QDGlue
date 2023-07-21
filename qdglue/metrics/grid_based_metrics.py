@@ -26,7 +26,7 @@ class DiscreteArchiveMetrics:
         max_fitness: Maximum objective value of the elites in the archive.
         ccdf: Complementary Cumulative Distribution of Fitness from Vassiliades
             et al. (2018)
-        discrete_archive_metrics_functor: The metrics functor that was used
+        discrete_archive_metrics_calculator: The metrics functor that was used
             to compute the metrics.
     """
 
@@ -36,20 +36,20 @@ class DiscreteArchiveMetrics:
     max_fitness: float
     ccdf: np.ndarray
 
-    discrete_archive_metrics_functor: DiscreteArchiveMetricsFunctor
+    discrete_archive_metrics_calculator: DiscreteArchiveMetricsCalculator
 
     @property
     def ccdf_fitness_bins(self) -> np.ndarray:
         """Returns the evaluation positions of the ."""
         return np.linspace(
-            start=self.discrete_archive_metrics_functor.fitness_bounds.low.item(),
-            stop=self.discrete_archive_metrics_functor.fitness_bounds.high.item(),
-            num=self.discrete_archive_metrics_functor.num_points_ccdf,
+            start=self.discrete_archive_metrics_calculator.fitness_bounds.low.item(),
+            stop=self.discrete_archive_metrics_calculator.fitness_bounds.high.item(),
+            num=self.discrete_archive_metrics_calculator.num_points_ccdf,
             endpoint=True,
         )
 
 
-class DiscreteArchiveMetricsFunctor(ABC):
+class DiscreteArchiveMetricsCalculator(ABC):
     def __init__(
         self,
         fitness_bounds: gymnasium.spaces.Box,
@@ -105,7 +105,7 @@ class DiscreteArchiveMetricsFunctor(ABC):
             qd_score_bound_norm=qd_score_bound_norm,
             max_fitness=max_fitness,
             ccdf=ccdf,
-            discrete_archive_metrics_functor=self,
+            discrete_archive_metrics_calculator=self,
         )
 
     def _compute_ccdf(
@@ -151,7 +151,7 @@ class DiscreteArchiveMetricsFunctor(ABC):
         """
 
 
-class GridMetricsFunctor(DiscreteArchiveMetricsFunctor):
+class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
     def __init__(
         self,
         feature_space: gymnasium.spaces.Box,
@@ -217,7 +217,7 @@ class GridMetricsFunctor(DiscreteArchiveMetricsFunctor):
         ), "Features must be within the feature space bounds"
 
 
-class CVTMetricsFunctor(DiscreteArchiveMetricsFunctor):
+class CVTMetricsCalculator(DiscreteArchiveMetricsCalculator):
     def __init__(
         self,
         fitness_bounds: gymnasium.spaces.Box,

@@ -1,7 +1,10 @@
 import gymnasium
 import numpy as np
 
-from qdglue.metrics.grid_based_metrics import CVTMetricsFunctor, GridMetricsFunctor
+from qdglue.metrics.grid_based_metrics import (
+    CVTMetricsCalculator,
+    GridMetricsCalculator,
+)
 
 
 def test_grid_based_metrics():
@@ -9,7 +12,7 @@ def test_grid_based_metrics():
     fitness_bounds = gymnasium.spaces.Box(low=-1.0, high=1.0, shape=(1,))
     resolution = (2, 2)
 
-    calculator = GridMetricsFunctor(
+    calculator = GridMetricsCalculator(
         feature_space=feature_space,
         fitness_bounds=fitness_bounds,
         resolution=resolution,
@@ -43,7 +46,7 @@ def test_cvt_based_metrics():
         ]
     )
 
-    calculator = CVTMetricsFunctor(
+    calculator = CVTMetricsCalculator(
         fitness_bounds=fitness_bounds,
         centroids=centroids,
         num_points_ccdf=11,
