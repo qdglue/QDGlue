@@ -10,21 +10,22 @@ from qdglue.types import Feature, Fitness
 
 @dataclasses.dataclass
 class DiscreteArchiveMetrics:
-    """Holds statistics about an archive."""
+    """Holds statistics about an archive.
 
-    # Proportion of cells in the archive that have an elite - always in the
-    # range :math:`[0,1]`.
+    Attributes:
+        coverage: Proportion of cells in the archive that have an elite - always
+            in the range $[0,1]$.
+        qd_score: QD score, i.e. sum of objective values of all elites in the
+            archive. All the fitnesses are normalized to $[0,1]$ using the
+            fitness_bounds before computing the QD score.
+        max_fitness: Maximum objective value of the elites in the archive.
+        ccdf: Complementary Cumulative Distribution of Fitness from Vassiliades
+            et al. (2018)
+    """
+
     coverage: float
-
-    # QD score, i.e. sum of objective values of all elites in the archive.
-    # all the fitnesses are normalized to [0,1] using the fitness_bounds
-    # before computing the QD score.
     qd_score: float
-
-    # Maximum objective value of the elites in the archive.
     max_fitness: float
-
-    # Complementary Cumulative Distribution of Fitness from Vassiliades et al. (2018)
     ccdf: np.ndarray
 
 
