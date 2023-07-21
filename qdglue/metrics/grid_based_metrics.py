@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from abc import ABC, abstractmethod
 from typing import Dict, Tuple
@@ -15,21 +17,39 @@ class DiscreteArchiveMetrics:
     Attributes:
         coverage: Proportion of cells in the archive that have an elite - always
             in the range $[0,1]$.
-        qd_score: QD score, i.e. sum of objective values of all elites in the
-            archive. All the fitnesses are normalized to $[0,1]$ using the
-            fitness_bounds before computing the QD score.
+        qd_score_bound_norm: QD score, i.e. sum of objective values of all
+            elites in the archive. All the fitnesses are normalized to $[0,1]$
+            using the fitness_bounds before computing the QD score.
+        qd_score_original: QD score as originally introduced by Pugh et al.
+            (2016). All the fitnesses are subtracted by a lower bound before
+            being summed.
         max_fitness: Maximum objective value of the elites in the archive.
         ccdf: Complementary Cumulative Distribution of Fitness from Vassiliades
             et al. (2018)
+        discrete_archive_metrics_functor: The metrics functor that was used
+            to compute the metrics.
     """
 
     coverage: float
-    qd_score: float
+    qd_score_bound_norm: float
+    qd_score_original: float
     max_fitness: float
     ccdf: np.ndarray
 
+    discrete_archive_metrics_functor: DiscreteArchiveMetricsFunctor
 
-class DiscreteArchiveMetricsCalculator(ABC):
+    @property
+    def ccdf_fitness_bins(self) -> np.ndarray:
+        """Returns the evaluation positions of the ."""
+        return np.linspace(
+            start=self.discrete_archive_metrics_functor.fitness_bounds.low.item(),
+            stop=self.discrete_archive_metrics_functor.fitness_bounds.high.item(),
+            num=self.discrete_archive_metrics_functor.num_points_ccdf,
+            endpoint=True,
+        )
+
+
+class DiscreteArchiveMetricsFunctor(ABC):
     def __init__(
         self,
         fitness_bounds: gymnasium.spaces.Box,
@@ -45,6 +65,13 @@ class DiscreteArchiveMetricsCalculator(ABC):
         self.fitness_bounds = fitness_bounds
         self.num_points_ccdf = num_points_ccdf
 
+    def __call__(
+        self,
+        fitnesses: Fitness,
+        features: Feature,
+    ) -> DiscreteArchiveMetrics:
+        return self.get_metrics(fitnesses, features)
+
     def get_metrics(
         self,
         fitnesses: Fitness,
@@ -56,48 +83,45 @@ class DiscreteArchiveMetricsCalculator(ABC):
         # Extracting the best fitnesses per cell
         # The empty cells do not appear in the best_fitnesses array
         best_fitnesses = self._extract_best_fitnesses_per_cell(fitnesses, features)
-        best_fitnesses_normalized = (best_fitnesses - self.fitness_bounds.low) / (
+        best_fitnesses_non_negative = best_fitnesses - self.fitness_bounds.low
+        best_fitnesses_normalized = best_fitnesses_non_negative / (
             self.fitness_bounds.high - self.fitness_bounds.low
         )
-        # TODO(looka): support case where fitness_bounds.high == +inf, and just apply the offset in that case?
 
         # Computing the metrics
         total_cells = self.num_cells
 
         coverage = np.size(best_fitnesses) / total_cells
         max_fitness = np.max(best_fitnesses)
-        qd_score = np.sum(best_fitnesses_normalized).item()
+        qd_score = np.sum(best_fitnesses_non_negative).item()
+        qd_score_bound_norm = np.sum(best_fitnesses_normalized).item()
 
         # Computing the Complementary Cumulative Distribution of Fitness
         ccdf = self._compute_ccdf(best_fitnesses)
 
         return DiscreteArchiveMetrics(
             coverage=coverage,
-            qd_score=qd_score,
+            qd_score_original=qd_score,
+            qd_score_bound_norm=qd_score_bound_norm,
             max_fitness=max_fitness,
             ccdf=ccdf,
+            discrete_archive_metrics_functor=self,
         )
 
     def _compute_ccdf(
         self,
         best_fitnesses: Fitness,
     ) -> np.ndarray:
-        fitnesses_intermediate = np.linspace(
-            start=self.fitness_bounds.low,
-            stop=self.fitness_bounds.high,
-            num=self.num_points_ccdf,
-            endpoint=True,
-        )
+        histogram_fitnesses = np.histogram(
+            best_fitnesses.ravel(),
+            bins=self.num_points_ccdf - 1,
+            range=(self.fitness_bounds.low.item(), self.fitness_bounds.high.item()),
+        )[0]
 
-        list_coverages_higher_than_fit = []
+        histogram_fitnesses = np.append(histogram_fitnesses, 0)
 
-        total_cells = self.num_cells
-
-        for _fit in fitnesses_intermediate:
-            coverage_higher_than_fit = np.sum(best_fitnesses >= _fit) / total_cells
-            list_coverages_higher_than_fit.append(coverage_higher_than_fit)
-
-        ccdf = np.asarray(list_coverages_higher_than_fit)
+        # Complementary Cumulative Distribution of Fitness (done by summing the histogram from the end)
+        ccdf = np.cumsum(histogram_fitnesses[::-1])[::-1] / self.num_cells
 
         return ccdf
 
@@ -127,7 +151,7 @@ class DiscreteArchiveMetricsCalculator(ABC):
         """
 
 
-class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
+class GridMetricsFunctor(DiscreteArchiveMetricsFunctor):
     def __init__(
         self,
         feature_space: gymnasium.spaces.Box,
@@ -166,7 +190,7 @@ class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
 
         features_indexes = np.ravel_multi_index(
             multi_index=features_multi_indexes.T, dims=self.resolution, mode="raise"
-        )  # TODO check this line
+        )
 
         # Collecting the best fitnesses per feature index
         best_fitness_per_feature_index: Dict[int, Fitness] = dict()
@@ -193,7 +217,7 @@ class GridMetricsCalculator(DiscreteArchiveMetricsCalculator):
         ), "Features must be within the feature space bounds"
 
 
-class CVTMetricsCalculator(DiscreteArchiveMetricsCalculator):
+class CVTMetricsFunctor(DiscreteArchiveMetricsFunctor):
     def __init__(
         self,
         fitness_bounds: gymnasium.spaces.Box,
@@ -239,52 +263,3 @@ class CVTMetricsCalculator(DiscreteArchiveMetricsCalculator):
         best_fitnesses = np.asarray(list(best_fitness_per_centroid_index.values()))
 
         return best_fitnesses
-
-
-def example_grid_based_metrics():
-    feature_space = gymnasium.spaces.Box(low=0.0, high=1.0, shape=(2,))
-    fitness_bounds = gymnasium.spaces.Box(low=0.0, high=1.0, shape=(1,))
-    resolution = (10, 10)
-
-    calculator = GridMetricsCalculator(
-        feature_space=feature_space,
-        fitness_bounds=fitness_bounds,
-        resolution=resolution,
-    )
-
-    metrics = calculator.get_metrics(
-        fitnesses=np.array([0.3, 0.5, 0.7]),
-        features=np.array([[0.55, 0.55], [0.55, 0.551], [0.3, 0.3]]),
-    )
-
-    print("Grid based metrics:", metrics)
-
-
-def example_cvt_based_metrics():
-    fitness_bounds = gymnasium.spaces.Box(low=0.0, high=1.0, shape=(1,))
-
-    centroids = np.array(
-        [
-            [0.1, 0.1],
-            [0.9, 0.9],
-            [0.1, 0.9],
-            [0.9, 0.1],
-        ]
-    )
-
-    calculator = CVTMetricsCalculator(
-        fitness_bounds=fitness_bounds,
-        centroids=centroids,
-    )
-
-    metrics = calculator.get_metrics(
-        fitnesses=np.array([0.3, 0.5, 0.7]),
-        features=np.array([[0.9, 0.9], [0.9, 0.91], [0.3, 0.3]]),
-    )
-
-    print("CVT based metrics:", metrics)
-
-
-if __name__ == "__main__":
-    example_grid_based_metrics()
-    example_cvt_based_metrics()
