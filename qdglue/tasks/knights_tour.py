@@ -95,6 +95,9 @@ class KnightsTour(QDTask):
             are: ["hand", "vae"]
     """
 
+    # TODO(rboldi): Is parameter_space_dims supposed to be here? It's not in the
+    # method definition.
+
     def __init__(self, method):
         super().__init__()
 

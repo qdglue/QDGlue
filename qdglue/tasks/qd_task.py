@@ -45,7 +45,7 @@ class QDTask(ABC):
         Args:
             parameters: A batch of parameters to evaluate.
             random_key: Pseudo-random generator key (Mostly useful for JAX random number
-            generation)
+                generation)
         Returns:
             (batch_of_fitness, batch_of_descriptors, dict containing batch of extra_data)
         """
