@@ -100,10 +100,7 @@ class KnightsTour(QDTask):
 
     def __init__(self, method):
         super().__init__()
-
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        print(f"using device: {device}")
-        self._parameter_space_dims = 64
+        self._parameter_space_dims = 66
         max_bound = 8
         self._measure_space_dims = [(0, 8), (0, 8)]
 
@@ -119,6 +116,9 @@ class KnightsTour(QDTask):
         self._method = method
 
         if method == "vae":
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            print(f"using device: {device}")
+
             # todo (rboldi) figure out how to do gpu stuff between jax and pytorch
             self.fitness_model = VariationalAutoencoder(8, device)
             self.fitness_model.load_state_dict(
@@ -132,8 +132,24 @@ class KnightsTour(QDTask):
         else:
             self.fitness_model = None
 
-    # computes end position and tiles covered
     def calculate(self, g):
+        """Calculates the visited tiles of a solution. Converts the first 64
+        values into possible moves to make, and then cumulatively sums the
+        displacement vectors to determine the end position and the first
+        position after a rule break.
+
+        Args:
+            g (array-like of ints): A single array of shape (66,) of integers
+            the first 2 inegers represent the starting position of the knight.
+            [0, 8). The next 64 represent moves in the range [0, 8).
+
+        Returns:
+            (np.array, np.array, int): returns a tuple of:
+                - an array of shape (64, 2) representing the visited tiles in the order tey are vsited
+                - an array of variable leading dimension representing the list of visited
+                    tiles before the first rule break
+                - an integer representing the number of tiles that are visited without breaking any rules
+        """
         moves = np.concatenate(
             (np.array([[g[0], g[1]]]), self.directions[g[2:]]), axis=0
         )
@@ -157,15 +173,28 @@ class KnightsTour(QDTask):
 
         return visited, valid_visited, len(valid_visited)
 
-    def evaluate(self, parameters, random_key=None):
-        # parameters is a list of 66 integers, with a leading batch dimension
-        # the first 64 are the moves to make (1-8).
-        # the last two are the start position (x, y)
-        # TODO(looka): should _parameter_space_dims be equal to 66 instead
-        #  instead of 64 then?
+    def evaluate(self, parameters):
+        """Calculates the visited tiles of a solution. Converts the first 64
+        values into possible moves to make, and then cumulatively sums the
+        displacement vectors to determine the end position and the first
+        position after a rule break.
+
+        Args:
+            parameters (array-like of ints): A single array with leading batch dimension
+            (batch_size, 66) of integers. The first 2 inegers of each individual represent the starting position of the knight.
+            [0, 8). The next 64 represent moves in the range [0, 8).
+
+        Returns:
+            (np.array, None, np.array, None):
+            returns a tuple representing:
+                - The objective value of each individual (tiles visited)
+                    of shape (batch_size, )
+                - None
+                - The measures for each individual of shape (batch_size, 2)
+                    representing the end (last valid) position of each individual.
+        """
 
         # todo (rboldi) figure out how to batch the calculate function
-        # todo (rboldi) documentation like bryon
 
         if self._method == "hand":
             objective_batch = []
@@ -183,7 +212,7 @@ class KnightsTour(QDTask):
 
             # todo (rboldi) replace once decided on np vs jnp
             objective_batch = np.array(objective_batch)
-            measures_batch = np.array(measures)
+            measures_batch = np.array(measures_batch)
         elif self._method == "vae":
             # run batched through the nn
             measures_batch = self.fitness_model.forward_features(
