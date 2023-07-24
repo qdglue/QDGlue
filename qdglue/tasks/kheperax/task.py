@@ -27,7 +27,6 @@ class KheperaxTask(QDTask):
         self._scoring_fn = scoring_fn
 
         self._descriptor_space_bounds = [(0.0, 1.0), (0.0, 1.0)]
-        self._descriptor_space_bounds = jnp.array
         self._objective_space_dims = 1
 
         random_key, subkey = jax.random.split(random_key)
@@ -56,7 +55,7 @@ class KheperaxTask(QDTask):
         fitness, descriptor, info, _ = self._scoring_fn(params_pytree, random_key)
 
         # TODO: casting values depending on return_type as suggested by Bryon
-        return np.asarray(fitness), np.asarray(descriptor), info
+        return fitness, descriptor, info
 
     @property
     def parameter_space(self) -> gymnasium.spaces.Space:
